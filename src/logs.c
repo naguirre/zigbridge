@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+
 #include "logs.h"
 
 static ZNPStatusString _status_list[] =
@@ -45,19 +49,24 @@ static ZNPStatusString _status_list[] =
     {ZMACNOACK , "ZNP MAC no acknowledgemeent received"}
 };
 static uint8_t _status_list_len = sizeof(_status_list)/sizeof(ZNPStatusString);
+static uint8_t _loglevel = -1;
 
 void zg_logs_init()
 {
-    if(!eina_init())
-    {
-        fprintf(stderr, "Error while intializing EINA");
-        return;
-    }
-}
 
-int zg_logs_domain_register(const char *name,  const char *color)
+    char *tmp = getenv("ZP_LOG_LEVEL");
+    if (tmp)
+    {
+        _loglevel = atoi(tmp);
+    }
+    else
+    {
+        _loglevel = ZP_LOG_LEVEL_NONE;
+    }}
+
+int zg_logs_domain_register(const char *name __attribute__((unused)),  const char *color __attribute__((unused)))
 {
-    return eina_log_domain_register(name, color);
+    return 1;
 }
 
 void zg_logs_shutdown()
@@ -76,3 +85,44 @@ const char *zg_logs_znp_strerror(ZNPStatus status)
     return NULL;
 }
 
+void zp_log_print(int level, const char *file, int line, const char *format, ...)
+{
+    va_list va;
+
+    static const char *const c[] =
+    {
+        [ZP_LOG_LEVEL_EVENT]     = ZG_COLOR_WHITE,
+        [ZP_LOG_LEVEL_DEBUG]     = ZG_COLOR_BLUE,
+        [ZP_LOG_LEVEL_INFO]      = ZG_COLOR_LIGHTBLUE,
+        [ZP_LOG_LEVEL_WARNING]   = ZG_COLOR_YELLOW,
+        [ZP_LOG_LEVEL_ERROR]     = ZG_COLOR_LIGHTRED,
+        [ZP_LOG_LEVEL_CRITICAL]  = ZG_COLOR_RED,
+    };
+
+    static const char *const l[] =
+    {
+        [ZP_LOG_LEVEL_EVENT]    = "event",
+        [ZP_LOG_LEVEL_DEBUG]    = "debug",
+        [ZP_LOG_LEVEL_INFO]     = "info",
+        [ZP_LOG_LEVEL_WARNING]  = "warning",
+        [ZP_LOG_LEVEL_ERROR]    = "error",
+        [ZP_LOG_LEVEL_CRITICAL] = "critical",
+    };
+
+    /* no log => return */
+    if (_loglevel == ZP_LOG_LEVEL_NONE)
+    {
+        return;
+    }
+
+    if (level < _loglevel)
+    {
+        return;
+    }
+
+    va_start (va, format);
+    fprintf (stderr, ZG_FORMAT_BOLD "[%s:%d] %s%s" ZG_FORMAT_NORMAL ": ", file, line, c[level], l[level]);
+    vfprintf (stderr, format, va);
+    fprintf (stderr, "\n");
+    va_end (va);
+}

@@ -4,6 +4,10 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+
 #include "types.h"
 #include "rpc.h"
 #include "logs.h"
@@ -215,7 +219,7 @@ uint8_t zg_rpc_init(void)
     //int baudrate = 0;
 
     ENSURE_SINGLE_INIT(_init_count);
-    _log_domain = zg_logs_domain_register("zg_rpc", EINA_COLOR_BLUE);
+    _log_domain = zg_logs_domain_register("zg_rpc", ZG_COLOR_BLUE);
     if(!device)
     {
         ERR("No device provided, abort");

@@ -1,7 +1,7 @@
 #ifndef ZG_LOGS_H
 #define ZG_LOGS_H
 
-#include <Eina.h>
+#include <inttypes.h>
 #include <stdarg.h>
 
 /* Make sure that our logging macro are not already defined elsewhere */
@@ -21,11 +21,12 @@
 #undef DBG
 #endif
 
-#define CRI(...) EINA_LOG_DOM_CRIT(_log_domain, __VA_ARGS__)
-#define ERR(...) EINA_LOG_DOM_ERR(_log_domain, __VA_ARGS__)
-#define WRN(...) EINA_LOG_DOM_WARN(_log_domain, __VA_ARGS__)
-#define INF(...) EINA_LOG_DOM_INFO(_log_domain, __VA_ARGS__)
-#define DBG(...) EINA_LOG_DOM_DBG(_log_domain, __VA_ARGS__)
+#define CRI(...) zp_log_print(ZP_LOG_LEVEL_CRITICAL, __FILE__, __LINE__, __VA_ARGS__)
+#define ERR(...) zp_log_print(ZP_LOG_LEVEL_ERROR, __FILE__, __LINE__, __VA_ARGS__)
+#define WRN(...) zp_log_print(ZP_LOG_LEVEL_WARNING, __FILE__, __LINE__, __VA_ARGS__)
+#define INF(...) zp_log_print(ZP_LOG_LEVEL_INFO, __FILE__, __LINE__, __VA_ARGS__)
+#define DBG(...) zp_log_print(ZP_LOG_LEVEL_DEBUG, __FILE__, __LINE__, __VA_ARGS__)
+#define EVT(...) zp_log_print(ZP_LOG_LEVEL_EVENT, __FILE__, __LINE__, __VA_ARGS__)
 
 #define ZG_COLOR_WHITE          "\033[37;1m"
 #define ZG_COLOR_BLACK          "\033[30;47m"
@@ -42,6 +43,16 @@
 #define ZG_COLOR_CYAN           "\033[36;1m"
 #define ZG_COLOR_LIGHTCYAN      "\033[96;1m"
 
+#define ZG_FORMAT_NORMAL        "\033[0m"
+#define ZG_FORMAT_BOLD          "\033[1;1m"
+
+#define ZP_LOG_LEVEL_CRITICAL   6
+#define ZP_LOG_LEVEL_ERROR      5
+#define ZP_LOG_LEVEL_WARNING    4
+#define ZP_LOG_LEVEL_INFO       3
+#define ZP_LOG_LEVEL_DEBUG      2
+#define ZP_LOG_LEVEL_EVENT      1
+#define ZP_LOG_LEVEL_NONE       0
 
 typedef enum
 {
@@ -120,6 +131,9 @@ void zg_logs_shutdown();
  * \return A string describing the error hold by the error code
  */
 const char *zg_logs_znp_strerror(ZNPStatus status);
+
+void zp_log_print(int log_domain, const char *file, int line, const char *format, ...);
+
 
 #endif
 
